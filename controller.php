@@ -109,11 +109,19 @@ require 'db.php';
                     echo json_encode([]);
                 }
         break;
-         //CONSULTAR MOVIMIENTOS
+         //CONSULTAR MOVIMIENTOS DE DIA ACTUAL
          case '5':
-            $sql = "SELECT [Id], [Folio], [ItemsCount], [CreatedDate], [StatusId], [User]
-                    FROM [dbo].[Movements]";
+            // Obtener la fecha actual
+            $today = date('Y-m-d');
+        
+            // Consulta para comparar solo la parte de la fecha
+            $sql = "SELECT m.[Id], m.[Folio], m.[ItemsCount], m.[CreatedDate], m.[StatusId], m.[User], s.[Name] as StatusName
+                    FROM [dbo].[Movements] m
+                    LEFT JOIN [dbo].[StatusEnumerable] s ON m.[StatusId] = s.[Id]
+                    WHERE CAST(m.[CreatedDate] AS DATE) = :today";
+        
             $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(':today', $today);
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -122,8 +130,9 @@ require 'db.php';
             } else {
                 echo json_encode([]);
             }
-    break;
-        //INGRESAR MOVIMIENTO
+            break;
+        
+        //INGRESAR MOVIMIENTO NUEVO
         case '6':
             $itemsCount = isset($_POST['itemsCount']) ? intval($_POST['itemsCount']) : null;
                 $createdDate = $_POST['createdDate'] ?? null;
@@ -166,7 +175,27 @@ require 'db.php';
                 } else {
                     echo json_encode(['message' => 'Datos incompletos']);
                 }
-            break;
+        break;
+        //CONSULTAR DETALLES DE MOVIMIENTO POR ID
+        case '7':
+            $idMov = $_POST['idMov'] ?? null; 
+
+            $sql = "SELECT i.[Id], i.[MovementId], i.[LissonId], i.[EconomicId], l.[Name] as LissonName , CAST(e.[Name] AS INT) as EconomicName              
+            FROM [dbo].[Items] i 
+            LEFT JOIN [dbo].[Lissons] l ON  i.[LissonId] = l.[Id]
+            LEFT JOIN [dbo].[Economics] e ON  i.[EconomicId] = e.[Id]
+            WHERE MovementId = :idMov";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(':idMov', $idMov);
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+            if ($result) {
+                echo json_encode($result);
+            } else {
+                echo json_encode([]);
+            }
+        break;
     }
     }else{
             echo json_encode('No se envio ninguna opcion');
