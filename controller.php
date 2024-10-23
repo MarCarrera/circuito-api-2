@@ -111,17 +111,18 @@ require 'db.php';
         break;
          //CONSULTAR MOVIMIENTOS DE DIA ACTUAL
          case '5':
-            // Obtener la fecha actual
-            $today = date('Y-m-d');
+            $fecha = $_POST['fecha'] ?? null; 
         
             // Consulta para comparar solo la parte de la fecha
             $sql = "SELECT m.[Id], m.[Folio], m.[ItemsCount], m.[CreatedDate], m.[StatusId], m.[User], s.[Name] as StatusName
                     FROM [dbo].[Movements] m
                     LEFT JOIN [dbo].[StatusEnumerable] s ON m.[StatusId] = s.[Id]
-                    WHERE CAST(m.[CreatedDate] AS DATE) = :today";
+                    WHERE CAST(m.[CreatedDate] AS DATE) = :fecha 
+                    ORDER BY m.[Id] DESC";
         
             $stmt = $pdo->prepare($sql);
-            $stmt->bindParam(':today', $today);
+            // No es necesario usar comillas aquí, PDO las maneja automáticamente
+            $stmt->bindParam(':fecha', $fecha);
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -131,6 +132,7 @@ require 'db.php';
                 echo json_encode([]);
             }
             break;
+        
         
         //INGRESAR MOVIMIENTO NUEVO
         case '6':
@@ -184,7 +186,7 @@ require 'db.php';
             FROM [dbo].[Items] i 
             LEFT JOIN [dbo].[Lissons] l ON  i.[LissonId] = l.[Id]
             LEFT JOIN [dbo].[Economics] e ON  i.[EconomicId] = e.[Id]
-            WHERE MovementId = :idMov";
+            WHERE MovementId = :idMov ORDER BY i.[Id] DESC";
             $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':idMov', $idMov);
             $stmt->execute();
