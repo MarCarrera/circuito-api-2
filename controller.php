@@ -182,7 +182,9 @@ require 'db.php';
         case '7':
             $idMov = $_POST['idMov'] ?? null; 
 
-            $sql = "SELECT i.[Id], i.[MovementId], i.[LissonId], i.[EconomicId], l.[Name] as LissonName , CAST(e.[Name] AS INT) as EconomicName              
+            //$sql = "SELECT i.[Id], i.[MovementId], i.[LissonId], i.[EconomicId], l.[Name] as LissonName , CAST(e.[Name] AS INT) as EconomicName    
+            
+            $sql = "SELECT i.[Id], i.[MovementId], i.[LissonId], i.[EconomicId], l.[Name] as LissonName , e.[Name] as EconomicName 
             FROM [dbo].[Items] i 
             LEFT JOIN [dbo].[Lissons] l ON  i.[LissonId] = l.[Id]
             LEFT JOIN [dbo].[Economics] e ON  i.[EconomicId] = e.[Id]
